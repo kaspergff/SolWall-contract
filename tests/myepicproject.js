@@ -1,5 +1,7 @@
 const anchor = require('@project-serum/anchor');
 const { SystemProgram } = anchor.web3;
+const BigNumber = require('bignumber.js');
+
 
 const main = async() => {
   console.log("🚀 Starting test...")
@@ -29,6 +31,35 @@ const main = async() => {
       user: provider.wallet.publicKey,
     },
   });
+
+
+  const multipleVotes = async () => {
+    for (let i = 0; i < 3; i++) {
+      await program.rpc.updateItem("https://giphy.com/clips/hamlet-jJjb9AUHOiP3nJJMdy",provider.wallet.publicKey.toString(), {
+        accounts: {
+          baseAccount: baseAccount.publicKey
+        },
+      });
+    }
+  }
+
+
+  const send = async () => {
+    tx = await program.rpc.sendSol('1', {
+      accounts: {
+        from: provider.wallet.publicKey,
+        to: "y7Cexhzak96apikq4q9mQfDmXyWwQkBBvHU7NozKboF",
+        systemProgram: SystemProgram.programId,
+      },
+    })
+      console.log('Success!')
+  }
+
+
+  await multipleVotes()
+
+  await send()
+
   
   // Call the account.
   account = await program.account.baseAccount.fetch(baseAccount.publicKey);

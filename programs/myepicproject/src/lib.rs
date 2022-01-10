@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 
 declare_id!("GQYX5FugE2PJtb9vjQScDu5n1RJLQQz1pSdY2Kp1xfaV");
 
+
 #[program]
 pub mod myepicproject {
   use super::*;
@@ -23,20 +24,70 @@ pub mod myepicproject {
       gif_votes: 0,
     };
 
+
 	// Add it to the gif_list vector.
     base_account.gif_list.push(item);
     base_account.total_gifs += 1;
     Ok(())
   }
+
+  pub fn update_item(ctx: Context<UpdateItem>, gif_link: String, gif_uploader: String) -> ProgramResult {
+    let base_account = &mut ctx.accounts.base_account;
+
+    for gif in &mut base_account.gif_list {
+        if gif.gif_link == gif_link && gif.user_address.to_string() == gif_uploader {
+            gif.gif_votes += 1;
+        }
+    }
+    Ok(())
+  }
+
+  pub fn send_sol(ctx: Context<SendSol>, amount: String) -> ProgramResult{
+    let amount_as_num: u64 = amount.parse().unwrap();
+    let ix = anchor_lang::solana_program::system_instruction::transfer(
+      &ctx.accounts.from.key(), 
+      &ctx.accounts.to.key(), 
+      amount_as_num,);
+    anchor_lang::solana_program::program::invoke(
+      &ix, 
+      &[
+        ctx.accounts.from.to_account_info(),
+        ctx.accounts.to.to_account_info()
+      ],
+    )
+  }
+
+
+
+//   pub fn send_sol(ctx: Context<SendSol>, amount: String) -> ProgramResult {
+//     let amount_as_num: u64 = amount.parse().unwrap();
+//     let ix = anchor_lang::solana_program::system_instruction::transfer(
+//         &ctx.accounts.from.key(),
+//         &ctx.accounts.to.key(),
+//         amount_as_num
+//     );
+//     anchor_lang::solana_program::program::invoke(
+//         &ix,
+//         &[
+//             ctx.accounts.from.to_account_info(),
+//             ctx.accounts.to.to_account_info()
+//         ]
+//     );
+//     Ok(())
+// }
 }
 
-pub fn update_item(ctx: Context<UpdateItem>, item_index: String) -> ProgramResult {
-  let base_account = &mut ctx.accounts.base_account;
-  let item_index_as_num: usize = item_index.parse().unwrap();
-  let item_to_update = &mut base_account.gif_list[item_index_as_num as usize];
-  item_to_update.gif_votes += 1;
-  Ok(())
+#[derive(Accounts)]
+pub struct SendSol<'info>{
+  #[account(mut)]
+  from: Signer<'info>,
+  #[account(mut)]
+  to: AccountInfo<'info>, 
+  system_program: Program<'info,System>  
 }
+
+
+
 
 #[derive(Accounts)]
 pub struct UpdateItem<'info>{
@@ -68,7 +119,7 @@ pub struct AddGif<'info> {
 pub struct ItemStruct {
     pub gif_link: String,
     pub user_address: Pubkey,
-    pub gif_votes: i32,
+    pub gif_votes: u64,
 }
 
 #[account]
