@@ -45,7 +45,7 @@ const main = async() => {
 
 
   const send = async () => {
-    tx = await program.rpc.sendSol('1', {
+    tx = await program.rpc.sendSol('1', { 
       accounts: {
         from: provider.wallet.publicKey,
         to: "y7Cexhzak96apikq4q9mQfDmXyWwQkBBvHU7NozKboF",
